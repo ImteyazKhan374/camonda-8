@@ -1,0 +1,78 @@
+services:
+  zeebe:
+    image: camunda/zeebe:8.4.2
+    container_name: camunda-zeebe
+    ports:
+      - "26500:26500"
+    environment:
+      - ZEEBE_BROKER_NETWORK_HOST=0.0.0.0
+      - ZEEBE_BROKER_GATEWAY_ENABLE=true
+      - ZEEBE_BROKER_GATEWAY_SECURITY_PLAINTEXT=true
+      - ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_CLASSNAME=io.camunda.zeebe.exporter.ElasticsearchExporter
+      - ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_ARGS_URL=http://elasticsearch:9200
+      - ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_ARGS_BULK_DELAY=100
+      - ZEEBE_BROKER_JAVA_OPTS=-Xmx1g -Xms512m
+    healthcheck:
+      test: ["CMD", "zbctl", "--insecure", "status"]
+      interval: 10s
+      timeout: 30s
+      retries: 30
+      start_period: 120s
+    networks:
+      - camunda-net
+
+  operate:
+    image: camunda/operate:8.4.2
+    container_name: camunda-operate
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - CAMUNDA_OPERATE_ZEEBE_GATEWAY_ADDRESS=zeebe:26500
+      - CAMUNDA_OPERATE_ELASTICSEARCH_URL=http://elasticsearch:9200
+      - CAMUNDA_OPERATE_ZEEBEELASTICSEARCH_URL=http://elasticsearch:9200
+    ports:
+      - "8081:8080"
+    networks:
+      - camunda-net
+
+  tasklist:
+    image: camunda/tasklist:8.4.2
+    container_name: camunda-tasklist
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - CAMUNDA_TASKLIST_ZEEBE_GATEWAY_ADDRESS=zeebe:26500
+      - CAMUNDA_TASKLIST_ELASTICSEARCH_URL=http://elasticsearch:9200
+      - CAMUNDA_TASKLIST_ZEEBEELASTICSEARCH_URL=http://elasticsearch:9200
+    ports:
+      - "8082:8080"
+    networks:
+      - camunda-net
+
+  elasticsearch:
+    image: elasticsearch:7.17.10
+    container_name: camunda-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - camunda-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+networks:
+  camunda-net:
+    driver: bridge
+
+volumes:
+  es_data:

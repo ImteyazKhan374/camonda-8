@@ -1,0 +1,32 @@
+server:
+  port: 9090
+
+zeebe:
+  client:
+    broker:
+      gateway-address: 127.0.0.1:26500  # Use IP, not localhost
+    security:
+      plaintext: true  # Explicitly disable SSL
+    worker:
+      defaultName: "spring-worker"
+      threads: 2
+
+logging:
+  level:
+    io.camunda: DEBUG
+    org.springframework: INFO
+## src/main/resources/application.yaml
+#server:
+#  port: 9090 # Port for your Spring Boot application's REST endpoints
+#
+#camunda:
+#  zeebe:
+#    client:
+#      broker.gateway.address: localhost:26500 # Connects to the Dockerized Zeebe
+      # If you enabled authentication in Docker Compose (e.g., with Camunda Identity/Keycloak):
+      # security.plaintext: false
+      # security.oauth.client-id: zeebe
+      # security.oauth.client-secret: zecret
+      # security.oauth.audience: zeebe-api
+      # security.oauth.auth-server-url: http://localhost:18080/realms/camunda-platform/protocol/openid-connect/token
+      # (Ensure the auth-server-url uses localhost if Identity is also exposed via Docker Desktop)
