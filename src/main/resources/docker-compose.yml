@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   zeebe:
     image: camunda/zeebe:8.4.2
@@ -12,6 +14,8 @@ services:
       - ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_ARGS_URL=http://elasticsearch:9200
       - ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_ARGS_BULK_DELAY=100
       - ZEEBE_BROKER_JAVA_OPTS=-Xmx1g -Xms512m
+    volumes:
+      - zeebe_data:/usr/local/zeebe/data
     healthcheck:
       test: ["CMD", "zbctl", "--insecure", "status"]
       interval: 10s
@@ -52,7 +56,7 @@ services:
       - camunda-net
 
   elasticsearch:
-    image: elasticsearch:7.17.10
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
     container_name: camunda-elasticsearch
     environment:
       - discovery.type=single-node
@@ -75,4 +79,5 @@ networks:
     driver: bridge
 
 volumes:
+  zeebe_data:
   es_data:

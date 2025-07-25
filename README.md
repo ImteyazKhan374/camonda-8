@@ -172,7 +172,7 @@ spring.main.allow-bean-definition-overriding=true
 │   ├── main/
 │   │   ├── java/
 │   │   │   └── com/
-│   │   │       └── tcs/
+│   │   │       └── abkatk/
 │   │   │           ├── config/         # Zeebe client config
 │   │   │           ├── workers/        # Job handlers
 │   │   │           └── Application.java

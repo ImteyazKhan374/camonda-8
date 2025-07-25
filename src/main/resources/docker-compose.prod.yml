@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  zeebe:
+    image: camunda/zeebe:8.4.2
+    environment:
+      - ZEEBE_BROKER_CLUSTER_CLUSTERSIZE=1  # Single node for simplicity
+      - ZEEBE_BROKER_NETWORK_HOST=0.0.0.0
+      - ZEEBE_BROKER_GATEWAY_ENABLE=true
+      - ZEEBE_BROKER_GATEWAY_SECURITY_PLAINTEXT=true  # Disable TLS for local dev
+    ports:
+      - "26500:26500"
+    volumes:
+      - zeebe_data:/usr/local/zeebe/data
+
+  operate:
+    image: camunda/operate:8.4.2
+    environment:
+      - CAMUNDA_OPERATE_ELASTICSEARCH_URL=http://elasticsearch:9200
+      - CAMUNDA_OPERATE_ZEEBEELASTICSEARCH_URL=http://elasticsearch:9200
+    ports:
+      - "8081:8080"
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: elasticsearch:7.17.10
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+volumes:
+  zeebe_data:
+  es_data:
